@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.description = 'Utility class for incrementally recording measured values and reporting avg, variance, min, and max'
   s.author      = 'Stefan Plantikow'
   s.email       = 'stefanp@moviepilot.com'
-  s.homepage    = 'http://moviepilot.github.com/statval'
+  s.homepage    = 'https://github.com/moviepilot/statval'
   s.rubyforge_project = 'statval'
 
   s.files         = `git ls-files`.split("\n")
