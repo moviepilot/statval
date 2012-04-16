@@ -111,6 +111,16 @@ module StatVal
       this
     end
 
+    def time
+      start = Time.now
+      begin
+        yield
+      ensure
+        stop = Time.now
+        self << (stop-start)
+      end
+    end
+    
     def key_hash(which_keys = nil)
       return which_keys if which_keys.is_a?(Hash)
 

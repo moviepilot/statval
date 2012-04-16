@@ -74,5 +74,12 @@ module StatVal
       ::StatVal.map_hash(@it).keys.to_set.should be == [ :h, :a ].to_set
       ::StatVal.flatmap_hash(@it).keys.to_set.should be == [ 'a', 'num_h', 'std_h', 'min_h', 'max_h', 'avg_h' ].to_set
     end
+
+    it 'times' do
+      @it = StatVal.new
+      @it.time {|| sleep(2) }
+      @it.avg.should be > 2.0
+      @it.avg.should be < 3.0
+    end
   end
 end
