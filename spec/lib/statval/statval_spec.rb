@@ -1,5 +1,4 @@
 require 'set'
-
 require 'statval'
 
 module StatVal
@@ -73,6 +72,11 @@ module StatVal
       @it = { a: 7, h: @it } 
       ::StatVal.map_hash(@it).keys.to_set.should be == [ :h, :a ].to_set
       ::StatVal.flatmap_hash(@it).keys.to_set.should be == [ 'a', 'num_h', 'std_h', 'min_h', 'max_h', 'avg_h' ].to_set
+    end
+
+    it 'renders statvals with key renaming as if they were hashes' do
+      @it = ::StatVal.flatmap_hash(StatVal.new, ::StatVal.key_hash(nil).tap {|h| h[:max] = :susi } ).keys.to_set
+      @it.should be == ['min', 'susi', 'num', 'std', 'avg'].to_set
     end
 
     it 'times' do

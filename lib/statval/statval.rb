@@ -2,9 +2,6 @@ module StatVal
 
   class StatVal
 
-    POS_INFINITY =   1.0/0.0
-    NEG_INFINITY = - 1.0/0.0
-
     attr_reader :num
     attr_reader :min
     attr_reader :max
@@ -23,12 +20,7 @@ module StatVal
       options
     end
 
-
-    def all_keys ; [ :avg, :std, :min, :max, :num, :sum, :sq_sum, :avg_sq, :var ] end
-    def default_keys ; [ :avg, :std, :min, :max, :num ] end
-    def writable_keys ; [ :num, :min, :max, :sum, :sq_sum ] end
-
-    alias_method :keys, :default_keys
+    def keys ; ::StatVal.keys(:default) end
 
     def [](key)
       case key
@@ -121,27 +113,8 @@ module StatVal
       end
     end
     
-    def key_hash(which_keys = nil)
-      return which_keys if which_keys.is_a?(Hash)
-
-      case which_keys
-        when nil then iter = keys
-        when :all then iter = all_keys
-        when :default then iter = default_keys
-        when :writable then iter = writable_keys
-        else
-          if which_keys.repsond_to?(:each)
-            iter = which_Keys
-          else
-            return { which_keys => which_keys }
-          end
-      end
-
-      iter.inject({}) { |h, k| h[k] = k; h }
-    end
-
-    def to_hash(which_keys = nil)
-      key_hash(which_keys).inject({}) { |h, (name, attr)| h[name] = self[attr]; h }
+    def to_hash(which_keys = nil, convert_to_s = false)
+      ::StatVal.key_hash(which_keys).inject({}) { |h, (attr, name)| h[(if convert_to_s then name.to_s else name end)] = self[attr]; h }
     end
 
     def to_s ; to_hash.to_s end
@@ -183,14 +156,39 @@ module StatVal
       @max = if new_val then new_val else (if empty? then NEG_INFINITY else avg+std end) end
     end
 
+    def std_ratio ; std / avg end
+
     private
 
+    POS_INFINITY =   1.0/0.0
+    NEG_INFINITY = - 1.0/0.0
+
     def abs_is_infinite(val) ; val.abs.to_f === POS_INFINITY end
-
     def zero_if_unbounded(val) ; if bounded? then val else 0.0 end end
-
     def abs_div(nom, denom) ; nom.abs.to_f / denom end
+  end
 
+  def self.new(options = {}) ; StatVal.new(options) end
+
+  def self.all_keys ; [ :avg, :std, :std_ratio, :min, :max, :num, :sum, :sq_sum, :avg_sq, :var ] end
+  def self.default_keys ; [ :avg, :std, :min, :max, :num ] end
+  def self.writable_keys ; [ :num, :min, :max, :sum, :sq_sum ] end
+
+  def self.keys(ident = :default)
+    case ident
+    when :all then all_keys
+    when :writable then writable_keys
+    when :default then default_keys
+    when nil then default_keys
+    else
+      return ident if ident.respond_to?(:each)
+      return [ident]
+    end
+  end
+
+  def self.key_hash(which_keys = nil)
+    return which_keys if which_keys.is_a?(Hash)
+    keys(which_keys).inject({}) { |h, k| h[k] = k; h }
   end
 
   # Take hash that contains StatVal values and create new hash that is identical to it but has
@@ -211,6 +209,8 @@ module StatVal
   # raises on key conflict
   #
   def self.flatmap_hash(h, which_keys = nil, prefix=true, use_symbols=false)
+    return h.to_hash(which_keys, ! use_symbols) if h.kind_of?(StatVal)
+
     flat = {}
     h.each_pair do |k,r|
       if r.kind_of? StatVal
