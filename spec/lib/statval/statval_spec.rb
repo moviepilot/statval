@@ -63,15 +63,21 @@ module StatVal
       @it[:avg].should be == 5.0
       @it[:sq_sum].should be == 148
       @it[:var].should be == 49
-      @it[:std].should be == 7      
+      @it[:std].should be == 7
     end
 
     it 'renders hashes' do
       @it = StatVal.new
       @it.reset num: 2, min: -2, max: +12, sum: 10, sq_sum: 148
-      @it = { a: 7, h: @it } 
+      @it = { a: 7, h: @it }
       ::StatVal.map_hash(@it).keys.to_set.should be == [ :h, :a ].to_set
       ::StatVal.flatmap_hash(@it).keys.to_set.should be == [ 'a', 'num_h', 'std_h', 'min_h', 'max_h', 'avg_h' ].to_set
+    end
+
+    it 'renders hashes with all keys' do
+      @it = StatVal.new
+      all_keys = [ :num, :min, :max, :sum, :sq_sum, :std_ratio, :avg, :std, :avg_sq, :var ]
+      @it.to_hash(:all).keys.to_set.should be == all_keys.to_set
     end
 
     it 'renders statvals with key renaming as if they were hashes' do

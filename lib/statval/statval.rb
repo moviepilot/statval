@@ -29,6 +29,7 @@ module StatVal
         when :max then max
         when :sum then sum
         when :sq_sum then sq_sum
+        when :std_ratio then std_ratio
         when :avg then avg
         when :std then std
         when :avg_sq then avg_sq
@@ -89,10 +90,10 @@ module StatVal
           @max        = value if value > @max
         else
           if value.respond_to?(:each_pair)
-            value.each_pair { |k, v| this << v } 
-          else 
+            value.each_pair { |k, v| this << v }
+          else
             if value.respond_to?(:each)
-              value.each { |v| this << v } 
+              value.each { |v| this << v }
             else
               raise ArgumentError
             end
@@ -112,7 +113,7 @@ module StatVal
         self << (stop-start)
       end
     end
-    
+
     def to_hash(which_keys = nil, convert_to_s = false)
       ::StatVal.key_hash(which_keys).inject({}) { |h, (attr, name)| h[(if convert_to_s then name.to_s else name end)] = self[attr]; h }
     end
